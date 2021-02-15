@@ -23,59 +23,59 @@
  *
  *  2021-02-15: Edits by orval
  */
- 
+
 import groovy.json.JsonSlurper
 
 metadata {
-	definition (name: "Sonoff TH Wifi Switch DR", namespace: "erocm123", author: "Eric Maycock", vid:"generic-switch") {
+    definition (name: "Sonoff TH Wifi Switch DR", namespace: "erocm123", author: "Eric Maycock", vid:"generic-switch") {
         capability "Actuator"
-		capability "Switch"
-		capability "Refresh"
-		capability "Sensor"
+        capability "Switch"
+        capability "Refresh"
+        capability "Sensor"
         capability "Configuration"
         capability "Temperature Measurement"
-		capability "Relative Humidity Measurement"
+        capability "Relative Humidity Measurement"
         capability "Health Check"
-        
-        command "reboot"
-                
-        attribute   "needUpdate", "string"
-	}
 
-	simulator {
-	}
-    
+        command "reboot"
+
+        attribute   "needUpdate", "string"
+    }
+
+    simulator {
+    }
+
     preferences {
         input description: "Once you change values on this page, the corner of the \"configuration\" icon will change orange until all configuration parameters are updated.", title: "Settings", displayDuringSetup: false, type: "paragraph", element: "paragraph"
-		generate_preferences(configuration_model())
-	}
+        generate_preferences(configuration_model())
+    }
 
-	tiles (scale: 2){      
-		multiAttributeTile(name:"switch", type: "generic", width: 6, height: 4, canChangeIcon: true){
-			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "on", label:'${name}', action:"switch.off", backgroundColor:"#00a0dc", icon: "st.switches.switch.on", nextState:"turningOff"
-				attributeState "off", label:'${name}', action:"switch.on", backgroundColor:"#ffffff", icon: "st.switches.switch.off", nextState:"turningOn"
-				attributeState "turningOn", label:'${name}', action:"switch.off", backgroundColor:"#00a0dc", icon: "st.switches.switch.off", nextState:"turningOff"
-				attributeState "turningOff", label:'${name}', action:"switch.on", backgroundColor:"#ffffff", icon: "st.switches.switch.on", nextState:"turningOn"
-			}
+    tiles (scale: 2){
+        multiAttributeTile(name:"switch", type: "generic", width: 6, height: 4, canChangeIcon: true){
+            tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
+                attributeState "on", label:'${name}', action:"switch.off", backgroundColor:"#00a0dc", icon: "st.switches.switch.on", nextState:"turningOff"
+                attributeState "off", label:'${name}', action:"switch.on", backgroundColor:"#ffffff", icon: "st.switches.switch.off", nextState:"turningOn"
+                attributeState "turningOn", label:'${name}', action:"switch.off", backgroundColor:"#00a0dc", icon: "st.switches.switch.off", nextState:"turningOff"
+                attributeState "turningOff", label:'${name}', action:"switch.on", backgroundColor:"#ffffff", icon: "st.switches.switch.on", nextState:"turningOn"
+            }
         }
         valueTile("temperature","device.temperature", inactiveLabel: false, width: 2, height: 2) {
-            	state "temperature",label:'${currentValue}°', backgroundColors:[
+                state "temperature",label:'${currentValue}°', backgroundColors:[
                     [value: 31, color: "#153591"],
                     [value: 44, color: "#1e9cbb"],
                     [value: 59, color: "#90d2a7"],
-				    [value: 74, color: "#44b621"],
-				    [value: 84, color: "#f1d801"],
-				    [value: 95, color: "#d04e00"],
-				    [value: 96, color: "#bc2323"]
-			    ]
-		}
-		valueTile("humidity","device.humidity", inactiveLabel: false, width: 2, height: 2) {
-           	state "humidity",label:'RH ${currentValue} %'
-		}
-		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
-		}
+                    [value: 74, color: "#44b621"],
+                    [value: 84, color: "#f1d801"],
+                    [value: 95, color: "#d04e00"],
+                    [value: 96, color: "#bc2323"]
+                ]
+        }
+        valueTile("humidity","device.humidity", inactiveLabel: false, width: 2, height: 2) {
+               state "humidity",label:'RH ${currentValue} %'
+        }
+        standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
+        }
         standardTile("configure", "device.needUpdate", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "NO" , label:'', action:"configuration.configure", icon:"st.secondary.configure"
             state "YES", label:'', action:"configuration.configure", icon:"https://github.com/erocm123/SmartThingsPublic/raw/master/devicetypes/erocm123/qubino-flush-1d-relay.src/configure@2x.png"
@@ -84,23 +84,23 @@ metadata {
             state "default", label:"Reboot", action:"reboot", icon:"", backgroundColor:"#FFFFFF"
         }
         valueTile("ip", "ip", width: 2, height: 1) {
-    		state "ip", label:'IP Address\r\n${currentValue}'
-		}
+            state "ip", label:"IP Address\r\n${currentValue}"
+        }
         valueTile("uptime", "uptime", width: 2, height: 1) {
-    		state "uptime", label:'Uptime ${currentValue}'
-		}
-        
+            state "uptime", label:'Uptime ${currentValue}'
+        }
+
     }
 
-	main(["switch"])
-	details(["switch", "temperature", "humidity",
+    main(["switch"])
+    details(["switch", "temperature", "humidity",
              "refresh","configure","reboot",
              "ip", "uptime"])
 }
 
 def installed() {
-	log.debug "installed()"
-	configure()
+    log.debug "installed()"
+    configure()
 }
 
 def configure() {
@@ -113,7 +113,7 @@ def configure() {
 def updated()
 {
     logging("updated()", 1)
-    def cmds = [] 
+    def cmds = []
     cmds = update_needed_settings()
     sendEvent(name: "checkInterval", value: 2 * 15 * 60 + 2 * 60, displayed: false, data: [protocol: "lan", hubHardwareId: device.hub.hardwareID])
     sendEvent(name:"needUpdate", value: device.currentValue("needUpdate"), displayed:false, isStateChange: true)
@@ -137,17 +137,17 @@ private def logging(message, level) {
 }
 
 def parse(description) {
-	log.debug "Parsing: ${description}"
+    log.debug "Parsing: ${description}"
     def events = []
     def descMap = parseDescriptionAsMap(description)
     def body
     log.debug "descMap: ${descMap}"
 
     if (!state.mac || state.mac != descMap["mac"]) {
-		log.debug "Mac address of device found ${descMap["mac"]}"
+        log.debug "Mac address of device found ${descMap["mac"]}"
         updateDataValue("mac", descMap["mac"])
-	}
-    
+    }
+
     if (state.mac != null && state.dni != state.mac) state.dni = setDeviceNetworkId(state.mac)
     if (descMap["body"]) body = new String(descMap["body"].decodeBase64())
 
@@ -157,7 +157,7 @@ def parse(description) {
     if(body.startsWith("{") || body.startsWith("[")) {
     def slurper = new JsonSlurper()
     def result = slurper.parseText(body)
-    
+
     log.debug "result: ${result}"
 
     if (result.containsKey("type")) {
@@ -191,32 +191,32 @@ def parse(description) {
         log.debug "Response is not JSON: $body"
     }
     }
-    
+
     if (!device.currentValue("ip") || (device.currentValue("ip") != getDataValue("ip"))) events << createEvent(name: 'ip', value: getDataValue("ip"))
-    
+
     return events
 }
 
 private getAdjustedTemp(value) {
     value = Math.round((value as Double) * 100) / 100
 
-	if (tempOffset) {
-	   return value =  value + Math.round(tempOffset * 100) /100
-	} else {
+    if (tempOffset) {
+       return value =  value + Math.round(tempOffset * 100) /100
+    } else {
        return value
     }
-    
+
 }
 
 private getAdjustedHumidity(value) {
     value = Math.round((value as Double) * 100) / 100
 
-	if (humidityOffset) {
-	   return value =  value + Math.round(humidityOffset * 100) /100
-	} else {
+    if (humidityOffset) {
+       return value =  value + Math.round(humidityOffset * 100) /100
+    } else {
        return value
     }
-    
+
 }
 
 def configureInstant(ip, port, pos){
@@ -226,17 +226,17 @@ def configureInstant(ip, port, pos){
 
 
 def parseDescriptionAsMap(description) {
-	description.split(",").inject([:]) { map, param ->
-		def nameAndValue = param.split(":")
-        
+    description.split(",").inject([:]) { map, param ->
+        def nameAndValue = param.split(":")
+
         if (nameAndValue.length == 2) map += [(nameAndValue[0].trim()):nameAndValue[1].trim()]
         else map += [(nameAndValue[0].trim()):""]
-	}
+    }
 }
 
 
 def on() {
-	log.debug "on()"
+    log.debug "on()"
     def cmds = []
     cmds << getAction("/on")
     return cmds
@@ -244,13 +244,13 @@ def on() {
 
 def off() {
     log.debug "off()"
-	def cmds = []
+    def cmds = []
     cmds << getAction("/off")
     return cmds
 }
 
 def refresh() {
-	log.debug "refresh()"
+    log.debug "refresh()"
     def cmds = []
     cmds << getAction("/status")
     return cmds
@@ -261,14 +261,14 @@ def ping() {
     refresh()
 }
 
-private getAction(uri){ 
+private getAction(uri){
   updateDNI()
-  
+
   def userpass
-  
-  if(password != null && password != "") 
+
+  if(password != null && password != "")
     userpass = encodeCredentials("admin", password)
-    
+
   def headers = getHeader(userpass)
 
   def hubAction = new physicalgraph.device.HubAction(
@@ -276,26 +276,26 @@ private getAction(uri){
     path: uri,
     headers: headers
   )
-  return hubAction    
+  return hubAction
 }
 
-private postAction(uri, data){ 
+private postAction(uri, data){
   updateDNI()
-  
+
   def userpass
-  
-  if(password != null && password != "") 
+
+  if(password != null && password != "")
     userpass = encodeCredentials("admin", password)
-  
+
   def headers = getHeader(userpass)
-  
+
   def hubAction = new physicalgraph.device.HubAction(
     method: "POST",
     path: uri,
     headers: headers,
     body: data
   )
-  return hubAction    
+  return hubAction
 }
 
 private setDeviceNetworkId(ip, port = null){
@@ -303,15 +303,15 @@ private setDeviceNetworkId(ip, port = null){
     if (port == null) {
         myDNI = ip
     } else {
-  	    def iphex = convertIPtoHex(ip)
-  	    def porthex = convertPortToHex(port)
+          def iphex = convertIPtoHex(ip)
+          def porthex = convertPortToHex(port)
         myDNI = "$iphex:$porthex"
     }
     log.debug "Device Network Id set to ${myDNI}"
     return myDNI
 }
 
-private updateDNI() { 
+private updateDNI() {
     if (state.dni != null && state.dni != "" && device.deviceNetworkId != state.dni) {
        device.deviceNetworkId = state.dni
     }
@@ -324,22 +324,22 @@ private getHostAddress() {
     else if(getDeviceDataByName("ip") && getDeviceDataByName("port")){
         return "${getDeviceDataByName("ip")}:${getDeviceDataByName("port")}"
     }else{
-	    return "${ip}:80"
+        return "${ip}:80"
     }
 }
 
-private String convertIPtoHex(ipAddress) { 
+private String convertIPtoHex(ipAddress) {
     String hex = ipAddress.tokenize( '.' ).collect {  String.format( '%02x', it.toInteger() ) }.join()
     return hex
 }
 
 private String convertPortToHex(port) {
-	String hexport = port.toString().format( '%04x', port.toInteger() )
+    String hexport = port.toString().format( '%04x', port.toInteger() )
     return hexport
 }
 
 private encodeCredentials(username, password){
-	def userpassascii = "${username}:${password}"
+    def userpassascii = "${username}:${password}"
     def userpass = "Basic " + userpassascii.encodeAsBase64().toString()
     return userpass
 }
@@ -354,7 +354,7 @@ private getHeader(userpass = null){
 }
 
 def reboot() {
-	log.debug "reboot()"
+    log.debug "reboot()"
     def uri = "/reboot"
     getAction(uri)
 }
@@ -374,12 +374,12 @@ def sync(ip, port) {
 def generate_preferences(configuration_model)
 {
     def configuration = parseXml(configuration_model)
-   
+
     configuration.Value.each
     {
         if(it.@hidden != "true" && it.@disabled != "true"){
         switch(it.@type)
-        {   
+        {
             case ["number"]:
                 input "${it.@index}", "number",
                     title:"${it.@label}\n" + "${it.Help}",
@@ -445,17 +445,17 @@ def update_needed_settings()
 {
     def cmds = []
     def currentProperties = state.currentProperties ?: [:]
-    
+
     state.settings = settings
-     
+
     def configuration = parseXml(configuration_model())
     def isUpdateNeeded = "NO"
-    
+
     cmds << getAction("/configSet?name=haip&value=${device.hub.getDataValue("localIP")}")
     cmds << getAction("/configSet?name=haport&value=${device.hub.getDataValue("localSrvPortTCP")}")
-    
+
     configuration.Value.each
-    {     
+    {
         if ("${it.@setting_type}" == "lan" && it.@disabled != "true"){
             if (currentProperties."${it.@index}" == null)
             {
@@ -469,14 +469,14 @@ def update_needed_settings()
                }
             }
             else if ((settings."${it.@index}" != null || it.@hidden == "true") && currentProperties."${it.@index}" != (settings."${it.@index}" != null? settings."${it.@index}".toString() : "${it.@value}"))
-            { 
+            {
                 isUpdateNeeded = "YES"
                 logging("Setting ${it.@index} will be updated to ${settings."${it.@index}"}", 2)
                 cmds << getAction("/configSet?name=${it.@index}&value=${settings."${it.@index}"}")
-            } 
+            }
         }
     }
-    
+
     sendEvent(name:"needUpdate", value: isUpdateNeeded, displayed:false, isStateChange: true)
     return cmds
 }
